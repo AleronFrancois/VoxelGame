@@ -21,7 +21,7 @@ public class Game : GameWindow
     : base(GameWindowSettings.Default, new NativeWindowSettings() 
         { ClientSize = new Vector2i(width, height), Title = title }) 
         {
-            camera = new Camera(new Vector3(0.0f, 0.0f, 3.0f), Vector3.UnitY, -90.0f, 0.0f);
+            camera = new Camera(new Vector3(0.0f, 0.0f, 0.0f), Vector3.UnitY, -90.0f, 0.0f);
         }
 
 
@@ -33,6 +33,7 @@ public class Game : GameWindow
         GL.Enable(EnableCap.DepthTest); // Enable depth testing
         GL.ClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set background color
         CursorState = CursorState.Grabbed; // Grab and hide cursor
+        GL.Enable(EnableCap.CullFace);
 
         // Center mouse cursor
         lastMousePosition = new Vector2(Size.X / 2f, Size.Y / 2f);
@@ -47,6 +48,8 @@ public class Game : GameWindow
         // Generate chunk
         Chunk chunk = new Chunk();
         chunk.GenerateChunk();
+
+        AddBlock(-5, 0, 0);
     }
 
 
@@ -79,6 +82,8 @@ public class Game : GameWindow
         var mouseDelta = mouse.Position - lastMousePosition;
         lastMousePosition = mouse.Position;
         camera.HandleMouseInput(mouseDelta);
+
+        Console.Write($"\rCamera position{camera.Position}"); // Camera position for debugging 
 
         // Update new camera view matrix
         Matrix4 view = camera.GetViewMatrix();

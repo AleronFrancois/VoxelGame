@@ -30,3 +30,4 @@ C:\Users\Aleron\Documents\VoxelGame\obj\Debug\net8.0\VoxelGame.pdb
 C:\Users\Aleron\Documents\VoxelGame\obj\Debug\net8.0\VoxelGame.genruntimeconfig.cache
 C:\Users\Aleron\Documents\VoxelGame\obj\Debug\net8.0\ref\VoxelGame.dll
 C:\Users\Aleron\Documents\VoxelGame\bin\Debug\net8.0\SimplexNoise.dll
+C:\Users\Aleron\Documents\VoxelGame\obj\Debug\net8.0\VoxelGame.sourcelink.json

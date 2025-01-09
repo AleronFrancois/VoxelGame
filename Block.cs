@@ -19,31 +19,26 @@ public class Block
             1f, 0f, 0f,  
             0f, 0f, 0f,  
             0f, 1f, 0f,  
-            
             // Front face
             0f, 1f, 1f,  
             0f, 0f, 1f,  
             1f, 0f, 1f, 
-            1f, 1f, 1f,  
-
+            1f, 1f, 1f, 
             // Right face
             1f, 1f, 1f,  
             1f, 0f, 1f,  
             1f, 0f, 0f,  
-            1f, 1f, 0f,  
-
+            1f, 1f, 0f, 
             // Left face
             0f, 1f, 0f,  
             0f, 0f, 0f,  
             0f, 0f, 1f,  
-            0f, 1f, 1f,  
-
+            0f, 1f, 1f, 
             // Top face
             0f, 1f, 1f,  
             1f, 1f, 1f,  
             1f, 1f, 0f,  
             0f, 1f, 0f,  
-
             // Bottom face
             0f, 0f, 1f,  
             0f, 0f, 0f,  
