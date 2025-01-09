@@ -27,7 +27,7 @@ class Shader
 
             void main()
             {
-                FragColor = vec4(0.0, 1.0, 0.0, 1.0); // Output green color
+                FragColor = vec4(0.0, 1.0, 1.0, 1.0);
             }";
 
         int vertexShader = CompileShader(ShaderType.VertexShader, vertexShaderSource);
@@ -40,8 +40,7 @@ class Shader
 
         // Check for linking errors
         GL.GetProgram(shaderProgram, GetProgramParameterName.LinkStatus, out int success);
-        if (success == 0)
-        {
+        if (success == 0) {
             string infoLog = GL.GetProgramInfoLog(shaderProgram);
             Console.WriteLine($"Error linking shader program: {infoLog}");
         }
@@ -59,8 +58,7 @@ class Shader
 
         // Check for compilation errors
         GL.GetShader(shader, ShaderParameter.CompileStatus, out int success);
-        if (success == 0)
-        {
+        if (success == 0) {
             string infoLog = GL.GetShaderInfoLog(shader);
             Console.WriteLine($"Error compiling {type}: {infoLog}");
         }

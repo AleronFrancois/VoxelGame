@@ -6,6 +6,11 @@ using OpenTK.Mathematics;
 using System;
 
 
+/// <summary>
+/// Handles the core game loop, initialisation, updating, and rendering.
+/// </summary>
+
+
 public class Game : GameWindow
 {   
     private int shaderProgram;
@@ -16,14 +21,12 @@ public class Game : GameWindow
     private bool wireframe = true;
 
 
-
     public Game(int width, int height, string title)
     : base(GameWindowSettings.Default, new NativeWindowSettings() 
         { ClientSize = new Vector2i(width, height), Title = title }) 
         {
             camera = new Camera(new Vector3(0.0f, 0.0f, 0.0f), Vector3.UnitY, -90.0f, 0.0f);
         }
-
 
 
     protected override void OnLoad() {
@@ -46,12 +49,12 @@ public class Game : GameWindow
         GL.UniformMatrix4(viewLoc, false, ref view);
 
         // Generate chunk
-        Chunk chunk = new Chunk();
-        chunk.GenerateChunk();
+        Chunk chunkMesh = new Chunk();
+        chunkMesh.GenerateChunk();
 
-        AddBlock(-5, 0, 0);
+        //AddBlock(-3, 0, 0, new bool[] { true, true, true, true, true, true });
+        //AddBlock(-4, 0, 0, new bool[] { true, true, true, true, true, true });
     }
-
 
 
     private void InitialiseShaders() {   
@@ -63,7 +66,6 @@ public class Game : GameWindow
         viewLoc = GL.GetUniformLocation(shaderProgram, "view");
         projLoc = GL.GetUniformLocation(shaderProgram, "projection");
     }
-
 
 
     protected override void OnUpdateFrame(FrameEventArgs e) {
@@ -91,7 +93,6 @@ public class Game : GameWindow
     }
 
 
-
     private void DeveloperTools(KeyboardState input) {
         if (input.IsKeyDown(Keys.Escape)) Close(); // Exit window
 
@@ -107,7 +108,6 @@ public class Game : GameWindow
             }
         }
     }
-
 
 
     protected override void OnRenderFrame(FrameEventArgs e) {
@@ -126,7 +126,6 @@ public class Game : GameWindow
     }
 
 
-
     protected override void OnUnload() {
         base.OnUnload();
 
@@ -136,10 +135,8 @@ public class Game : GameWindow
     }
 
 
-
-    public static void AddBlock(float x, float y, float z) {
-        Block block = new Block();
-        block.Position = new Vector3(x, y, z);
+    public static void AddBlock(float x, float y, float z, bool[] visibleFaces) {
+        Block block = new Block(new Vector3(x, y, z), visibleFaces);
         blocks.Add(block);
     }
 }
