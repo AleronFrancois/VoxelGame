@@ -1,4 +1,13 @@
-﻿class Program
+﻿
+
+/// ------------------Program------------------
+/// 
+/// Runs the game and sets window resolution and title.
+/// 
+/// -------------------------------------------
+
+
+class Program
 {
     static void Main(string[] args) {
         // Initialize and run the game

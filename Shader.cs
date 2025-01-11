@@ -1,6 +1,13 @@
 using OpenTK.Graphics.OpenGL4;
 
 
+/// ----------------Shader Program----------------
+/// 
+/// Handles and manages rendering graphics
+/// 
+/// --------------------------------------------
+
+
 class Shader
 {
     public int CreateShaderProgram()  {
