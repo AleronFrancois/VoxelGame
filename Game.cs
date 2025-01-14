@@ -217,7 +217,6 @@ public class Game : GameWindow
     #endregion 
 
 
-
     #region DeveloperTools
     private void DeveloperTools(KeyboardState input) {
         if (input.IsKeyDown(Keys.Escape)) Close(); // Exit window
@@ -235,6 +234,7 @@ public class Game : GameWindow
         }
     }
     #endregion
+
 
     #region GetChunkPosition
     private Vector3 GetChunkPosition(Vector3 position) {
