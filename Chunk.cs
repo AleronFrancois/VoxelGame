@@ -15,8 +15,15 @@ using System.Collections.Concurrent;
 
 public class Chunk
 {
-    public List<Block> chunkBlocks = new List<Block>(); // List of blocks
+    public List<Block> chunkBlocks; // List of blocks in this chunk
     public static ConcurrentDictionary<Vector3, Block> blockLookup = new ConcurrentDictionary<Vector3, Block>(); // Thread-safe dictionary lookup system
+
+
+
+    public Chunk() {
+        chunkBlocks = new List<Block>(); // Initialize the list of blocks for this chunk
+    }
+
 
 
     public Block? GetAdjacentBlock(Block block, Vector3 direction) {
@@ -36,14 +43,7 @@ public class Chunk
         for (int x = 0; x < chunkSize; x++) {
             for (int y = 0; y < chunkSize; y++) {
                 for (int z = 0; z < chunkSize; z++) {
-                    // Add block
-                    Block block = new Block();
-                    block.Position = new Vector3(x, y, z);
-
-                    // Add block to dictionary if it doesn't already exist
-                    if (blockLookup.TryAdd(block.Position, block)) {
-                        chunkBlocks.Add(block);
-                    } 
+                    BlockType.AddGrassBlock(x, y, z, this);
                 }
             }
         }

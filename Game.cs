@@ -24,7 +24,7 @@ public class Game : GameWindow
     public static int modelLoc, viewLoc, projLoc; // Model, view and projection matrices
     private Vector2 lastMousePosition; // Last mouse position
     public static List<Block> blocks = new List<Block>(); // List of all blocks in the game
-    Chunk chunk = new Chunk(); // Check of blocks
+    Chunk chunk = new Chunk(); // Chunk of blocks
 
     private bool wireframe = true; // Flag for wireframe mode 
     private bool cursorGrabbed = true; // frag for cursor state
@@ -102,9 +102,8 @@ public class Game : GameWindow
             Matrix4 model = Matrix4.CreateTranslation(block.Position);
             GL.UniformMatrix4(modelLoc, false, ref model);
             block.Render();
-            //block.VisibleFaces = BlockFace.Back | BlockFace.Front | BlockFace.Bottom | BlockFace.Top | BlockFace.Right | BlockFace.Left;
         }
-        
+
         chunk.RenderChunkMesh();
 
         SwapBuffers();
@@ -167,18 +166,5 @@ public class Game : GameWindow
         // Generate chunk and render chunk mesh
         chunk.RenderChunkMesh();
         chunk.GenerateChunk();
-    }
-
-
-
-    public static void AddGrassBlock(float x, float y, float z) {
-        Block block = new Block();
-        block.Position = new Vector3(x, y, z);
-
-        // Append block to list and dictionary only if it does not exist
-        if (!Chunk.blockLookup.ContainsKey(block.Position)) {
-            blocks.Add(block);
-            Chunk.blockLookup[block.Position] = block;
-        }
     }
 }
