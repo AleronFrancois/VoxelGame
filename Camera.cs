@@ -69,7 +69,7 @@ public class Camera
         if (input.IsKeyDown(Keys.E)) Position -= WorldUp * velocity;
 
         // Shift to increase speed
-        if (input.IsKeyDown(Keys.LeftShift)) speed = 5.0f;
+        if (input.IsKeyDown(Keys.LeftShift)) speed = 15.0f;
         else speed = 2.5f;
     }   
 

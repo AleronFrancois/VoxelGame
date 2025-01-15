@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Aleron\\Documents\\GitHub\\VoxelGame\\VoxelGame.csproj": {}
+    "C:\\Users\\Aleron\\Documents\\VoxelGame\\VoxelGame.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Aleron\\Documents\\GitHub\\VoxelGame\\VoxelGame.csproj": {
+    "C:\\Users\\Aleron\\Documents\\VoxelGame\\VoxelGame.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Aleron\\Documents\\GitHub\\VoxelGame\\VoxelGame.csproj",
+        "projectUniqueName": "C:\\Users\\Aleron\\Documents\\VoxelGame\\VoxelGame.csproj",
         "projectName": "VoxelGame",
-        "projectPath": "C:\\Users\\Aleron\\Documents\\GitHub\\VoxelGame\\VoxelGame.csproj",
+        "projectPath": "C:\\Users\\Aleron\\Documents\\VoxelGame\\VoxelGame.csproj",
         "packagesPath": "C:\\Users\\Aleron\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Aleron\\Documents\\GitHub\\VoxelGame\\obj\\",
+        "outputPath": "C:\\Users\\Aleron\\Documents\\VoxelGame\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Aleron\\AppData\\Roaming\\NuGet\\NuGet.Config"

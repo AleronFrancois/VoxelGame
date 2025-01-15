@@ -1,37 +1,91 @@
 using SimplexNoise;
+using OpenTK.Mathematics;
+using OpenTK.Graphics.OpenGL4;
+using System.Collections.Concurrent;
 
 
-/// ----------------Chunk System----------------
+/// ---------------Chunk System---------------
 /// 
-/// Generates a chunk mesh and applies perlin noise.
-/// 
+/// Generates a chunk mesh by checking each block
+/// for neighboring, and only rendering faces
+/// that are adjcacent to air/null.
+///
 /// --------------------------------------------
 
 
-class Chunk 
+public class Chunk
 {
-    public void GenerateChunk(int chunkX, int chunkZ) {
-        int chunkSize = 16; // Chunk size
-        float scale = 0.05f; // Scale for perlin noise
-        int heightMultiplier = 5; // Height multiplier for hills
-        int surfaceLevel = 5; // Surface level where Perlin noise starts
-        bool[,,] blocks = new bool[chunkSize, chunkSize, chunkSize];
+    public List<Block> chunkBlocks = new List<Block>(); // List of blocks
+    public static ConcurrentDictionary<Vector3, Block> blockLookup = new ConcurrentDictionary<Vector3, Block>(); // Thread-safe dictionary lookup system
 
+
+    public Block? GetAdjacentBlock(Block block, Vector3 direction) {
+        // Calculates position of the adjacent block and uses dictionary lookup system to get block
+        Vector3 adjacentPosition = block.Position + direction;
+        if (blockLookup.TryGetValue(adjacentPosition, out Block? adjacentBlock)) return adjacentBlock;
+
+        return null;
+    }
+
+
+
+    public void GenerateChunk() {
+        int chunkSize = 16; // Chunk size
+    
         // Generate chunk with perlin noise
         for (int x = 0; x < chunkSize; x++) {
-            for (int z = 0; z < chunkSize; z++) {
-                // Generate height using perlin noise
-                float height = Noise.CalcPixel2D(x + chunkX * chunkSize, z + chunkZ * chunkSize, scale) / 255.0f * heightMultiplier;
-                int intHeight = surfaceLevel + (int)height;
+            for (int y = 0; y < chunkSize; y++) {
+                for (int z = 0; z < chunkSize; z++) {
+                    // Add block
+                    Block block = new Block();
+                    block.Position = new Vector3(x, y, z);
 
-                for (int y = 0; y < chunkSize; y++) {
-                    // Set blocks based on the height
-                    blocks[x, y, z] = y <= intHeight;
-                    
-                    // Add the block only if its within the valid terrain height range
-                    if (blocks[x, y, z]) {
-                        Game.AddBlock(x + chunkX * chunkSize, y, z + chunkZ * chunkSize);
-                    }
+                    // Add block to dictionary if it doesn't already exist
+                    if (blockLookup.TryAdd(block.Position, block)) {
+                        chunkBlocks.Add(block);
+                    } 
+                }
+            }
+        }
+    }
+
+
+
+    public void RenderChunkMesh() {
+        // All six directions of block
+        Vector3[] directions = new Vector3[]
+        {
+            new Vector3(0, 1, 0),  // Top
+            new Vector3(0, -1, 0), // Bottom
+            new Vector3(-1, 0, 0), // Left
+            new Vector3(1, 0, 0),  // Right
+            new Vector3(0, 0, 1),  // Front
+            new Vector3(0, 0, -1)  // Back
+        };
+
+        // Block face array
+        BlockFace[] faces = new BlockFace[] {
+            BlockFace.Top,
+            BlockFace.Bottom,
+            BlockFace.Left,
+            BlockFace.Right,
+            BlockFace.Front,
+            BlockFace.Back
+        };
+
+        // Checks each block in chunk block list
+        foreach (var block in chunkBlocks) {
+            // Set up matrix for each block in chunk
+            Matrix4 model = Matrix4.CreateTranslation(block.Position);
+            GL.UniformMatrix4(Game.modelLoc, false, ref model);
+            block.Render();
+
+            block.VisibleFaces = BlockFace.None;
+            
+            // Checks each direction for adjacent block
+            for (int i = 0; i < directions.Length; i++) {
+                if (GetAdjacentBlock(block, directions[i]) == null) {
+                    block.SetFaceVisible(faces[i]); // Set visibility
                 }
             }
         }
