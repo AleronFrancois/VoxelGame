@@ -26,8 +26,8 @@ public class Game : GameWindow
     public static List<Block> blocks = new List<Block>(); // List of all blocks in the game
     Chunk chunk = new Chunk(); // Chunk of blocks
 
-    private bool wireframe = true; // Flag for wireframe mode 
-    private bool cursorGrabbed = true; // frag for cursor state
+    public static bool wireframe = true; // Flag for wireframe mode 
+    public static bool cursorGrabbed = true; // frag for cursor state
 
 
 
@@ -35,9 +35,10 @@ public class Game : GameWindow
     : base(GameWindowSettings.Default, new NativeWindowSettings() 
         { 
             ClientSize = new Vector2i(width, height), Title = title 
-        }) {
-            camera = new Camera(new Vector3(0.0f, 10.0f, 0.0f), Vector3.UnitY, 0.0f, 0.0f);
-            UpdateFrequency = 144.0;
+        }) 
+        {
+            camera = new Camera(new Vector3(0.0f, 34.0f, 0.0f), Vector3.UnitY, 0.0f, 0.0f); // initialise camera position and orientation
+            UpdateFrequency = 144.0; // Framerate cap
         }
 
 
@@ -47,7 +48,7 @@ public class Game : GameWindow
 
         InitialiseShaders(); // Load shaders
         GL.Enable(EnableCap.DepthTest); // Enable depth testing
-        GL.ClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set background color
+        GL.ClearColor(0.3f, 0.5f, 1.0f, 1.0f); // Set background color
         //GL.Enable(EnableCap.CullFace); // Enable back face culling
         CursorState = CursorState.Grabbed; // Grab and hide cursor
 
@@ -61,7 +62,15 @@ public class Game : GameWindow
         Matrix4 view = camera.GetViewMatrix();
         GL.UniformMatrix4(viewLoc, false, ref view);
 
-        chunk.GenerateChunk(); // Initialise chunk mesh
+        // Generate chunk mesh
+        chunk.GenerateChunk(); 
+        BlockType.AddGrassBlock(0, 32, 0, chunk);
+        BlockType.AddGrassBlock(0, 32, 1, chunk);
+        BlockType.AddGrassBlock(0, 32, 2, chunk);
+        BlockType.AddGrassBlock(1, 32, 0, chunk);
+        BlockType.AddGrassBlock(1, 32, 1, chunk);
+        BlockType.AddGrassBlock(1, 32, 2, chunk);
+        chunk.GenerateChunkMesh(); 
     }
 
 
@@ -75,7 +84,7 @@ public class Game : GameWindow
         var input = KeyboardState;
         float deltaTime = (float)e.Time;
         camera.HandleKeyboardInput(input, deltaTime);
-        DeveloperTools(input); // Tools for debugging
+        Input.DeveloperTools(input, this); // Tools for debugging
 
         // Handle mouse input
         var mouse = MouseState;
@@ -98,13 +107,15 @@ public class Game : GameWindow
         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
         GL.UseProgram(shaderProgram);
 
-        foreach (var block in blocks) {
-            Matrix4 model = Matrix4.CreateTranslation(block.Position);
-            GL.UniformMatrix4(modelLoc, false, ref model);
-            block.Render();
-        }
+        // Update view matrix
+        Matrix4 view = camera.GetViewMatrix();
+        GL.UniformMatrix4(viewLoc, false, ref view);
 
-        chunk.RenderChunkMesh();
+        // Set model matrix for chunk
+        Matrix4 model = Matrix4.Identity;
+        GL.UniformMatrix4(modelLoc, false, ref model);
+
+        chunk.Render(); // Render chunk mesh
 
         SwapBuffers();
     }
@@ -119,6 +130,10 @@ public class Game : GameWindow
         modelLoc = GL.GetUniformLocation(shaderProgram, "model");
         viewLoc = GL.GetUniformLocation(shaderProgram, "view");
         projLoc = GL.GetUniformLocation(shaderProgram, "projection");
+
+        // Set up projection matrix
+        Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(45.0f), Size.X / (float)Size.Y, 0.1f, 100.0f);
+        GL.UniformMatrix4(projLoc, false, ref projection);
     }
 
 
@@ -128,43 +143,5 @@ public class Game : GameWindow
         // Clean resources on unload
         foreach (var block in blocks) block.Dispose();
         GL.DeleteProgram(shaderProgram);
-    }
-
-
-
-    private void DeveloperTools(KeyboardState input) {
-        if (input.IsKeyDown(Keys.Escape)) Close(); // Exit window
-
-        // Toggle wireframe mode
-        if (input.IsKeyPressed(Keys.D1)) {
-            if (wireframe) {
-                GL.PolygonMode(TriangleFace.FrontAndBack, PolygonMode.Line);
-                wireframe = false;
-            } 
-            else {
-                GL.PolygonMode(TriangleFace.FrontAndBack, PolygonMode.Fill);
-                wireframe = true;
-            }
-        }
-
-        // Toggle cursor visibility
-        if (input.IsKeyPressed(Keys.D2)) {
-            if (!cursorGrabbed) {
-                CursorState = CursorState.Grabbed;
-                cursorGrabbed = true;
-            }
-            else {
-                CursorState = CursorState.Normal;
-                cursorGrabbed = false;
-            }
-        }
-    }
-
-
-
-    public void RenderChunk() {
-        // Generate chunk and render chunk mesh
-        chunk.RenderChunkMesh();
-        chunk.GenerateChunk();
     }
 }
