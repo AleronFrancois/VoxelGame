@@ -25,20 +25,27 @@ public class Game : GameWindow
     private Vector2 lastMousePosition; // Last mouse position
     public static List<Block> blocks = new List<Block>(); // List of all blocks in the game
     Chunk chunk = new Chunk(); // Chunk of blocks
+    private int lightDirLoc, lightColorLoc, objectColorLoc;  // Add locations for light-related uniforms
+    private Crosshair crosshair;
+    private int crosshairShaderProgram;
 
     public static bool wireframe = true; // Flag for wireframe mode 
     public static bool cursorGrabbed = true; // frag for cursor state
+
+    private double lastTime;
+    private int frameCount;
 
 
 
     public Game(int width, int height, string title)
     : base(GameWindowSettings.Default, new NativeWindowSettings() 
         { 
-            ClientSize = new Vector2i(width, height), Title = title 
+            ClientSize = new Vector2i(width, height), Title = title
         }) 
         {
             camera = new Camera(new Vector3(0.0f, 34.0f, 0.0f), Vector3.UnitY, 0.0f, 0.0f); // initialise camera position and orientation
-            UpdateFrequency = 144.0; // Framerate cap
+            crosshair = new Crosshair(); // Initialize crosshair
+            //UpdateFrequency = 144.0; // Framerate cap
         }
 
 
@@ -71,6 +78,26 @@ public class Game : GameWindow
         BlockType.AddGrassBlock(1, 32, 1, chunk);
         BlockType.AddGrassBlock(1, 32, 2, chunk);
         chunk.GenerateChunkMesh(); 
+
+        lastTime = GLFW.GetTime(); // Initialise last time for fps calculation
+    }
+
+
+
+    protected override void OnResize(ResizeEventArgs e)
+    {
+        base.OnResize(e);
+
+        // Update the OpenGL viewport
+        GL.Viewport(0, 0, e.Width, e.Height);
+
+        // Update your projection matrix to maintain the aspect ratio
+        float aspectRatio = e.Width / (float)e.Height;
+        Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(45.0f), aspectRatio, 0.1f, 100.0f);
+
+        // Assuming you have a uniform location for the projection matrix
+        GL.UseProgram(shaderProgram);
+        GL.UniformMatrix4(projLoc, false, ref projection);
     }
 
 
@@ -92,11 +119,18 @@ public class Game : GameWindow
         lastMousePosition = mouse.Position;
         camera.HandleMouseInput(mouseDelta);
 
-        Console.Write($"\rCamera position: {camera.Position.X:F1} {camera.Position.Y:F1} {camera.Position.Z:F1}          "); // Camera position for debugging 
-
         // Update new camera view matrix
         Matrix4 view = camera.GetViewMatrix();
         GL.UniformMatrix4(viewLoc, false, ref view);
+
+        // Fps counter and camera position debug information
+        double currentTime = GLFW.GetTime();
+        frameCount++;
+        if (currentTime - lastTime >= 1.0) {
+            Title = $"3D Engine         FPS: {frameCount}   Position: {camera.Position.X:F1}, {camera.Position.Y:F1}, {camera.Position.Z:F1}";
+            frameCount = 0;
+            lastTime = currentTime;
+        }
     }
 
 
@@ -105,35 +139,64 @@ public class Game : GameWindow
         base.OnRenderFrame(e);
 
         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-        GL.UseProgram(shaderProgram);
+        GL.UseProgram(shaderProgram); 
 
         // Update view matrix
         Matrix4 view = camera.GetViewMatrix();
         GL.UniformMatrix4(viewLoc, false, ref view);
 
-        // Set model matrix for chunk
+        // Set model matrix for objects
         Matrix4 model = Matrix4.Identity;
         GL.UniformMatrix4(modelLoc, false, ref model);
 
         chunk.Render(); // Render chunk mesh
 
+        crosshair.Render(crosshairShaderProgram, Size.X, Size.Y);
+
         SwapBuffers();
+    }
+
+    
+
+    private void InitialiseShaders() {
+        // Initialize shader program
+        Shader shader = new Shader();
+        shaderProgram = shader.CreateShaderProgram();
+        GL.UseProgram(shaderProgram);
+
+        // Get uniform locations
+        modelLoc = GL.GetUniformLocation(shaderProgram, "model");
+        viewLoc = GL.GetUniformLocation(shaderProgram, "view");
+        projLoc = GL.GetUniformLocation(shaderProgram, "projection");
+        
+        // Set up projection matrix
+        Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(45.0f), Size.X / (float)Size.Y, 0.1f, 100.0f);
+        GL.UniformMatrix4(projLoc, false, ref projection);
+
+        DirectionalLight();
+
+        // Initialise crosshair
+        crosshair = new Crosshair();
+        crosshair.InitialiseCrosshair();
+        crosshairShaderProgram = new Shader().CreateCrosshairShaderProgram();
     }
 
 
 
-    private void InitialiseShaders() {   
-        // Initialise shader program
-        Shader shader = new Shader();
-        shaderProgram = shader.CreateShaderProgram();
-        GL.UseProgram(shaderProgram);
-        modelLoc = GL.GetUniformLocation(shaderProgram, "model");
-        viewLoc = GL.GetUniformLocation(shaderProgram, "view");
-        projLoc = GL.GetUniformLocation(shaderProgram, "projection");
+    private void DirectionalLight() {
+        // Get light uniform locations
+        lightDirLoc = GL.GetUniformLocation(shaderProgram, "lightDirection");
+        lightColorLoc = GL.GetUniformLocation(shaderProgram, "lightColor");
+        objectColorLoc = GL.GetUniformLocation(shaderProgram, "objectColor");
 
-        // Set up projection matrix
-        Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(45.0f), Size.X / (float)Size.Y, 0.1f, 100.0f);
-        GL.UniformMatrix4(projLoc, false, ref projection);
+        // Set up lighting values
+        Vector3 lightDirection = new Vector3(1.0f, -1.0f, 0.0f);
+        Vector3 lightColor = new Vector3(0.7f, 0.7f, 0.7f);
+        Vector3 objectColor = new Vector3(1.0f, 1.0f, 1.0f); // Color of blocks
+
+        GL.Uniform3(lightDirLoc, lightDirection);
+        GL.Uniform3(lightColorLoc, lightColor);
+        GL.Uniform3(objectColorLoc, objectColor);
     }
 
 
@@ -143,5 +206,7 @@ public class Game : GameWindow
         // Clean resources on unload
         foreach (var block in blocks) block.Dispose();
         GL.DeleteProgram(shaderProgram);
+        crosshair.Cleanup();
+        GL.DeleteProgram(crosshairShaderProgram);
     }
 }

@@ -32,17 +32,35 @@ public class Block {
     // Vertices array
     private static float[] vertices = new float[] {
         // Back face
-        1f, 1f, 0f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 1f, 0f,
+        1f, 1f, 0f,           0f, 0f, -1f,
+        1f, 0f, 0f,           0f, 0f, -1f,
+        0f, 0f, 0f,           0f, 0f, -1f,
+        0f, 1f, 0f,           0f, 0f, -1f,
         // Front face
-        0f, 1f, 1f, 0f, 0f, 1f, 1f, 0f, 1f, 1f, 1f, 1f,
+        0f, 1f, 1f,           0f, 0f, 1f,
+        0f, 0f, 1f,           0f, 0f, 1f,
+        1f, 0f, 1f,           0f, 0f, 1f,
+        1f, 1f, 1f,           0f, 0f, 1f,
         // Right face
-        1f, 1f, 1f, 1f, 0f, 1f, 1f, 0f, 0f, 1f, 1f, 0f,
+        1f, 1f, 1f,           1f, 0f, 0f,
+        1f, 0f, 1f,           1f, 0f, 0f,
+        1f, 0f, 0f,           1f, 0f, 0f,
+        1f, 1f, 0f,           1f, 0f, 0f,
         // Left face
-        0f, 1f, 0f, 0f, 0f, 0f, 0f, 0f, 1f, 0f, 1f, 1f,
+        0f, 1f, 0f,           -1f, 0f, 0f,
+        0f, 0f, 0f,           -1f, 0f, 0f,
+        0f, 0f, 1f,           -1f, 0f, 0f,
+        0f, 1f, 1f,           -1f, 0f, 0f,
         // Top face
-        0f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 0f, 0f, 1f, 0f,
+        0f, 1f, 1f,           0f, 1f, 0f,
+        1f, 1f, 1f,           0f, 1f, 0f,
+        1f, 1f, 0f,           0f, 1f, 0f,
+        0f, 1f, 0f,           0f, 1f, 0f,
         // Bottom face
-        0f, 0f, 1f, 0f, 0f, 0f, 1f, 0f, 0f, 1f, 0f, 1f
+        0f, 0f, 1f,           0f, -1f, 0f,
+        0f, 0f, 0f,           0f, -1f, 0f,
+        1f, 0f, 0f,           0f, -1f, 0f,
+        1f, 0f, 1f,           0f, -1f, 0f
     };
 
     // Indices array
@@ -82,8 +100,13 @@ public class Block {
         GL.BindBuffer(BufferTarget.ElementArrayBuffer, EBO);
         GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(uint), indices, BufferUsageHint.StaticDraw);
 
-        GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
+        // Position attribute
+        GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
         GL.EnableVertexAttribArray(0);
+
+        // Normal attribute
+        GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 3 * sizeof(float));
+        GL.EnableVertexAttribArray(1);
 
         GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
         GL.BindVertexArray(0);

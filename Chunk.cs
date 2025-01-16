@@ -86,7 +86,7 @@ public class Chunk
             for (int i = 0; i < directions.Length; i++) {
                 // Finds adjacent air block and sets face visibility appropriately
                 if (GetAdjacentBlock(block, directions[i]) == null) {
-                    block.SetFaceVisible(faces[i]); // Set visibility
+                    block.SetFaceVisible(faces[i]); // Set visibility accordingly
                     AddBlockFaceToMesh(block, faces[i]); // Add the block face to the mesh
                 }
             }
