@@ -9,10 +9,27 @@
       "VoxelGame/1.0.0": {
         "dependencies": {
           "SimplexNoise": "2.0.0",
+          "System.Drawing.Common": "9.0.1",
           "OpenTK": "4.9.3"
         },
         "runtime": {
           "VoxelGame.dll": {}
+        }
+      },
+      "Microsoft.Win32.SystemEvents/9.0.1": {
+        "runtime": {
+          "lib/net8.0/Microsoft.Win32.SystemEvents.dll": {
+            "assemblyVersion": "9.0.0.0",
+            "fileVersion": "9.0.124.61010"
+          }
+        },
+        "runtimeTargets": {
+          "runtimes/win/lib/net8.0/Microsoft.Win32.SystemEvents.dll": {
+            "rid": "win",
+            "assetType": "runtime",
+            "assemblyVersion": "9.0.0.0",
+            "fileVersion": "9.0.124.61010"
+          }
         }
       },
       "OpenTK/4.9.3": {
@@ -167,6 +184,21 @@
           }
         }
       },
+      "System.Drawing.Common/9.0.1": {
+        "dependencies": {
+          "Microsoft.Win32.SystemEvents": "9.0.1"
+        },
+        "runtime": {
+          "lib/net8.0/System.Drawing.Common.dll": {
+            "assemblyVersion": "9.0.0.0",
+            "fileVersion": "9.0.124.61006"
+          },
+          "lib/net8.0/System.Private.Windows.Core.dll": {
+            "assemblyVersion": "9.0.0.0",
+            "fileVersion": "9.0.124.61006"
+          }
+        }
+      },
       "System.Runtime.CompilerServices.Unsafe/6.0.0": {}
     }
   },
@@ -175,6 +207,13 @@
       "type": "project",
       "serviceable": false,
       "sha512": ""
+    },
+    "Microsoft.Win32.SystemEvents/9.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-OxjcwJqBW/5A1111+vL9d+5KYTvOzeCTJY9zHZ0kpQI4wX075p6L7inHPSYuf0MGakVjUvaShvw9e9pfbInU2Q==",
+      "path": "microsoft.win32.systemevents/9.0.1",
+      "hashPath": "microsoft.win32.systemevents.9.0.1.nupkg.sha512"
     },
     "OpenTK/4.9.3": {
       "type": "package",
@@ -259,6 +298,13 @@
       "sha512": "sha512-v9q0D/5PSUx3T8ZIixjDEGlLYIDhkTbeQOgz/SddoKw16aoz4LFlg7FTu9DD0304p2m9VsHfTmygCgZ2FzIDVw==",
       "path": "simplexnoise/2.0.0",
       "hashPath": "simplexnoise.2.0.0.nupkg.sha512"
+    },
+    "System.Drawing.Common/9.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-TTPkCqSMyMaG8BXlBKYTTJFtLV0SvjjsvgUN598hYgHaX/5B7tdUc2JhQF9vwrYmlzxId+gwFnKYuxQ2XsSz2g==",
+      "path": "system.drawing.common/9.0.1",
+      "hashPath": "system.drawing.common.9.0.1.nupkg.sha512"
     },
     "System.Runtime.CompilerServices.Unsafe/6.0.0": {
       "type": "package",

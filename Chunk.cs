@@ -100,13 +100,16 @@ public class Chunk
 
     private void AddBlockFaceToMesh(Block block, BlockFace face) {
         Vector3[] faceVertices = GetBlockFaceVertices(block.Position, face);
-        int startIndex = vertices.Count / 3; // Keep track of the number of vertices added
+        Vector2[] faceTexCoords = block.GetTextureCoordinates();
+        int startIndex = vertices.Count / 5; // Update to account for position and texture coordinates
 
         // Add the 4 vertices for this face
-        foreach (var vertex in faceVertices) {
-            vertices.Add(vertex.X);
-            vertices.Add(vertex.Y);
-            vertices.Add(vertex.Z);
+        for (int i = 0; i < faceVertices.Length; i++) {
+            vertices.Add(faceVertices[i].X);
+            vertices.Add(faceVertices[i].Y);
+            vertices.Add(faceVertices[i].Z);
+            vertices.Add(faceTexCoords[i].X);
+            vertices.Add(faceTexCoords[i].Y);
         }
 
         // Add indices for two triangles forming the face
@@ -120,46 +123,57 @@ public class Chunk
 
 
 
+    private Vector2[] GetBlockFaceTexCoords(Vector2 offset, Vector2 scale) {
+        return new Vector2[] {
+            offset,
+            new Vector2(offset.X + scale.X, offset.Y),
+            new Vector2(offset.X + scale.X, offset.Y + scale.Y),
+            new Vector2(offset.X, offset.Y + scale.Y)
+        };
+    }
+
+
+
     private Vector3[] GetBlockFaceVertices(Vector3 position, BlockFace face) {
         // Returns the four vertices of the block face based on the position and face
         Vector3[] vertices = new Vector3[4];
 
         switch (face) {
             case BlockFace.Top:
-                vertices[0] = position + new Vector3(-0.5f, 0.5f, -0.5f);
-                vertices[1] = position + new Vector3(0.5f, 0.5f, -0.5f);
-                vertices[2] = position + new Vector3(0.5f, 0.5f, 0.5f);
-                vertices[3] = position + new Vector3(-0.5f, 0.5f, 0.5f);
+                vertices[0] = position + new Vector3(0f, 1f, 1f);
+                vertices[1] = position + new Vector3(1f, 1f, 1f);
+                vertices[2] = position + new Vector3(1f, 1f, 0f);
+                vertices[3] = position + new Vector3(0f, 1f, 0f);
                 break;
             case BlockFace.Bottom:
-                vertices[0] = position + new Vector3(-0.5f, -0.5f, -0.5f);
-                vertices[1] = position + new Vector3(0.5f, -0.5f, -0.5f);
-                vertices[2] = position + new Vector3(0.5f, -0.5f, 0.5f);
-                vertices[3] = position + new Vector3(-0.5f, -0.5f, 0.5f);
+                vertices[0] = position + new Vector3(0f, 0f, 1f);
+                vertices[1] = position + new Vector3(0f, 0f, 0f);
+                vertices[2] = position + new Vector3(1f, 0f, 0f);
+                vertices[3] = position + new Vector3(1f, 0f, 1f);
                 break;
             case BlockFace.Left:
-                vertices[0] = position + new Vector3(-0.5f, 0.5f, -0.5f);
-                vertices[1] = position + new Vector3(-0.5f, -0.5f, -0.5f);
-                vertices[2] = position + new Vector3(-0.5f, -0.5f, 0.5f);
-                vertices[3] = position + new Vector3(-0.5f, 0.5f, 0.5f);
+                vertices[0] = position + new Vector3(0f, 1f, 0f);
+                vertices[1] = position + new Vector3(0f, 0f, 0f);
+                vertices[2] = position + new Vector3(0f, 0f, 1f);
+                vertices[3] = position + new Vector3(0f, 1f, 1f);
                 break;
             case BlockFace.Right:
-                vertices[0] = position + new Vector3(0.5f, 0.5f, -0.5f);
-                vertices[1] = position + new Vector3(0.5f, -0.5f, -0.5f);
-                vertices[2] = position + new Vector3(0.5f, -0.5f, 0.5f);
-                vertices[3] = position + new Vector3(0.5f, 0.5f, 0.5f);
+                vertices[0] = position + new Vector3(1f, 1f, 1f);
+                vertices[1] = position + new Vector3(1f, 0f, 1f);
+                vertices[2] = position + new Vector3(1f, 0f, 0f);
+                vertices[3] = position + new Vector3(1f, 1f, 0f);
                 break;
             case BlockFace.Front:
-                vertices[0] = position + new Vector3(-0.5f, 0.5f, 0.5f);
-                vertices[1] = position + new Vector3(0.5f, 0.5f, 0.5f);
-                vertices[2] = position + new Vector3(0.5f, -0.5f, 0.5f);
-                vertices[3] = position + new Vector3(-0.5f, -0.5f, 0.5f);
+                vertices[0] = position + new Vector3(0f, 1f, 1f);
+                vertices[1] = position + new Vector3(0f, 0f, 1f);
+                vertices[2] = position + new Vector3(1f, 0f, 1f);
+                vertices[3] = position + new Vector3(1f, 1f, 1f);
                 break;
             case BlockFace.Back:
-                vertices[0] = position + new Vector3(-0.5f, 0.5f, -0.5f);
-                vertices[1] = position + new Vector3(0.5f, 0.5f, -0.5f);
-                vertices[2] = position + new Vector3(0.5f, -0.5f, -0.5f);
-                vertices[3] = position + new Vector3(-0.5f, -0.5f, -0.5f);
+                vertices[0] = position + new Vector3(1f, 1f, 0f);
+                vertices[1] = position + new Vector3(1f, 0f, 0f);
+                vertices[2] = position + new Vector3(0f, 0f, 0f);
+                vertices[3] = position + new Vector3(0f, 1f, 0f);
                 break;
             default:
                 throw new ArgumentException("Invalid face");
@@ -184,9 +198,11 @@ public class Chunk
         GL.BindBuffer(BufferTarget.ElementArrayBuffer, ebo);
         GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Count * sizeof(uint), indices.ToArray(), BufferUsageHint.StaticDraw);
 
-        // Setup vertex attribute pointers (assuming position-only for simplicity)
-        GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
+        // Setup vertex attribute pointers (position and texture coordinates)
+        GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 5 * sizeof(float), 0);
         GL.EnableVertexAttribArray(0);
+        GL.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, 5 * sizeof(float), 3 * sizeof(float));
+        GL.EnableVertexAttribArray(1);
 
         GL.BindVertexArray(0);
     }

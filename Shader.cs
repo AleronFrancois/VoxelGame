@@ -13,46 +13,33 @@ class Shader
         string vertexShaderSource = @"
             #version 330 core
             layout(location = 0) in vec3 aPos;
-            layout(location = 1) in vec3 aNormal; // Add normal attribute
+            layout(location = 1) in vec2 aTexCoord;
 
             uniform mat4 model;
             uniform mat4 view;
             uniform mat4 projection;
 
+            out vec2 TexCoord;
             out vec3 fragPos;
-            out vec3 normal; // Pass normal to fragment shader
 
             void main()
             {
-                fragPos = vec3(model * vec4(aPos, 1.0));
-                normal = mat3(transpose(inverse(model))) * aNormal; // Transform normal to world space
+                fragPos = aPos;
                 gl_Position = projection * view * model * vec4(aPos, 1.0);
+                TexCoord = aTexCoord;
             }";
 
         string fragmentShaderSource = @"
             #version 330 core
+            in vec2 TexCoord;
             in vec3 fragPos;
             out vec4 FragColor;
 
-            uniform vec3 lightDirection;  // Direction from the sun (light)
-            uniform vec3 lightColor;      // Color of the sunlight (yellowish for the sun)
-            uniform vec3 objectColor;     // Color of the object being lit
+            uniform sampler2D texture1;
 
             void main()
             {
-                // Normalise light direction (sun is infinitely far away)
-                vec3 lightDir = normalize(lightDirection);
-
-                // Calculate the diffuse lighting (Lambertian reflection model)
-                // Assuming fragPos is the normal
-                vec3 normal = normalize(fragPos);
-                float diff = max(dot(normal, -lightDir), 0.0);  // Directional light, so invert lightDir
-                vec3 diffuse = diff * lightColor;
-
-                // Combine the diffuse lighting with the object's color
-                vec3 result = diffuse * objectColor;
-
-                FragColor = vec4(result, 1.0);
+                FragColor = texture(texture1, TexCoord);
             }";
 
         int vertexShader = CompileShader(ShaderType.VertexShader, vertexShaderSource);
@@ -152,5 +139,14 @@ class Shader
         GL.Uniform3(lightDirLocation, lightDirection);
         GL.Uniform3(lightColorLocation, lightColor);
         GL.Uniform3(objectColorLocation, objectColor);
+    }
+
+    public void Use(int shaderProgram) {
+        GL.UseProgram(shaderProgram);
+    }
+
+    public void SetInt(int shaderProgram, string name, int value) {
+        int location = GL.GetUniformLocation(shaderProgram, name);
+        GL.Uniform1(location, value);
     }
 }

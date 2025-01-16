@@ -27,40 +27,45 @@ public class Block {
     public static int EBO { get; private set; } // Shared Element Buffer Object
     public Vector3 Position { get; set; } // Position of block
     public BlockFace VisibleFaces { get; set; } // Gets visibility of block faces
+    public Vector2 AtlasOffset { get; private set; }
+    public Vector2 AtlasScale { get; private set; }
+    private Vector2 textureCoordStart;
+    private Vector2 textureCoordEnd;
+
 
 
     // Vertices array
     private static float[] vertices = new float[] {
         // Back face
-        1f, 1f, 0f,           0f, 0f, -1f,
-        1f, 0f, 0f,           0f, 0f, -1f,
-        0f, 0f, 0f,           0f, 0f, -1f,
-        0f, 1f, 0f,           0f, 0f, -1f,
+        1f, 1f, 0f,   0f, 1f,
+        1f, 0f, 0f,   0f, 0f,
+        0f, 0f, 0f,   1f, 0f,
+        0f, 1f, 0f,   1f, 1f,
         // Front face
-        0f, 1f, 1f,           0f, 0f, 1f,
-        0f, 0f, 1f,           0f, 0f, 1f,
-        1f, 0f, 1f,           0f, 0f, 1f,
-        1f, 1f, 1f,           0f, 0f, 1f,
+        0f, 1f, 1f,   0f, 1f,
+        0f, 0f, 1f,   0f, 0f,
+        1f, 0f, 1f,   1f, 0f,
+        1f, 1f, 1f,   1f, 1f,
         // Right face
-        1f, 1f, 1f,           1f, 0f, 0f,
-        1f, 0f, 1f,           1f, 0f, 0f,
-        1f, 0f, 0f,           1f, 0f, 0f,
-        1f, 1f, 0f,           1f, 0f, 0f,
+        1f, 1f, 1f,   0f, 1f,
+        1f, 0f, 1f,   0f, 0f,
+        1f, 0f, 0f,   1f, 0f,
+        1f, 1f, 0f,   1f, 1f,
         // Left face
-        0f, 1f, 0f,           -1f, 0f, 0f,
-        0f, 0f, 0f,           -1f, 0f, 0f,
-        0f, 0f, 1f,           -1f, 0f, 0f,
-        0f, 1f, 1f,           -1f, 0f, 0f,
+        0f, 1f, 0f,   0f, 1f,
+        0f, 0f, 0f,   0f, 0f,
+        0f, 0f, 1f,   1f, 0f,
+        0f, 1f, 1f,   1f, 1f,
         // Top face
-        0f, 1f, 1f,           0f, 1f, 0f,
-        1f, 1f, 1f,           0f, 1f, 0f,
-        1f, 1f, 0f,           0f, 1f, 0f,
-        0f, 1f, 0f,           0f, 1f, 0f,
+        0f, 1f, 1f,   0f, 1f,
+        1f, 1f, 1f,   1f, 1f,
+        1f, 1f, 0f,   1f, 0f,
+        0f, 1f, 0f,   0f, 0f,
         // Bottom face
-        0f, 0f, 1f,           0f, -1f, 0f,
-        0f, 0f, 0f,           0f, -1f, 0f,
-        1f, 0f, 0f,           0f, -1f, 0f,
-        1f, 0f, 1f,           0f, -1f, 0f
+        0f, 0f, 1f,  0f, 1f,
+        0f, 0f, 0f,  0f, 0f,
+        1f, 0f, 0f,  1f, 0f,
+        1f, 0f, 1f,  1f, 1f          
     };
 
     // Indices array
@@ -101,11 +106,11 @@ public class Block {
         GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(uint), indices, BufferUsageHint.StaticDraw);
 
         // Position attribute
-        GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
+        GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 5 * sizeof(float), 0);
         GL.EnableVertexAttribArray(0);
 
-        // Normal attribute
-        GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 3 * sizeof(float));
+        // Texture coordinate attribute
+        GL.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, 5 * sizeof(float), 3 * sizeof(float));
         GL.EnableVertexAttribArray(1);
 
         GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
@@ -126,6 +131,26 @@ public class Block {
 
 
 
+    public void SetTextureCoordinates(Vector2 start, Vector2 end) {
+        textureCoordStart = start;
+        textureCoordEnd = end;
+    }
+
+
+    // Method to get texture coordinates for rendering
+    public Vector2[] GetTextureCoordinates()
+    {
+        return new Vector2[]
+        {
+            textureCoordStart,
+            new Vector2(textureCoordEnd.X, textureCoordStart.Y),
+            textureCoordEnd,
+            new Vector2(textureCoordStart.X, textureCoordEnd.Y)
+        };
+    }
+
+
+
     public void UpdateVisibility(Block adjacentTop, Block adjacentBottom, Block adjacentLeft, Block adjacentRight, Block adjacentFront, Block adjacentBack) {
         VisibleFaces = BlockFace.None; // Reset visibility only if there's a change
 
@@ -140,9 +165,21 @@ public class Block {
 
 
 
-    public void Render() {
+    public void Render(int shaderProgram) {
         GL.BindVertexArray(VAO);
         GL.BindBuffer(BufferTarget.ElementArrayBuffer, EBO); // Bind EBO once
+
+        // Set texture atlas uniforms
+        int atlasOffsetLocation = GL.GetUniformLocation(shaderProgram, "atlasOffset");
+        int atlasScaleLocation = GL.GetUniformLocation(shaderProgram, "atlasScale");
+        GL.Uniform2(atlasOffsetLocation, textureCoordStart);
+        GL.Uniform2(atlasScaleLocation, textureCoordEnd - textureCoordStart);
+
+        // Bind the texture
+        GL.ActiveTexture(TextureUnit.Texture0);
+        GL.BindTexture(TextureTarget.Texture2D, BlockType.GrassTextureID);
+        int textureLocation = GL.GetUniformLocation(shaderProgram, "texture1");
+        GL.Uniform1(textureLocation, 0);
 
         uint indexOffset = 0;
 
@@ -157,6 +194,7 @@ public class Block {
 
         GL.BindVertexArray(0); // Unbind VAO once
     }
+
 
 
 

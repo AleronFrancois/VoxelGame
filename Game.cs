@@ -25,7 +25,6 @@ public class Game : GameWindow
     private Vector2 lastMousePosition; // Last mouse position
     public static List<Block> blocks = new List<Block>(); // List of all blocks in the game
     Chunk chunk = new Chunk(); // Chunk of blocks
-    private int lightDirLoc, lightColorLoc, objectColorLoc;  // Add locations for light-related uniforms
     private Crosshair crosshair;
     private int crosshairShaderProgram;
 
@@ -56,7 +55,8 @@ public class Game : GameWindow
         InitialiseShaders(); // Load shaders
         GL.Enable(EnableCap.DepthTest); // Enable depth testing
         GL.ClearColor(0.3f, 0.5f, 1.0f, 1.0f); // Set background color
-        //GL.Enable(EnableCap.CullFace); // Enable back face culling
+        GL.Enable(EnableCap.CullFace); // Enable back face culling
+        //GL.CullFace(CullFaceMode.Back);
         CursorState = CursorState.Grabbed; // Grab and hide cursor
 
         // Center mouse cursor
@@ -69,12 +69,15 @@ public class Game : GameWindow
         Matrix4 view = camera.GetViewMatrix();
         GL.UniformMatrix4(viewLoc, false, ref view);
 
+        // Load textures
+        BlockType.LoadTextures();
+
         // Generate chunk mesh
         chunk.GenerateChunk(); 
         BlockType.AddGrassBlock(0, 32, 0, chunk);
-        BlockType.AddGrassBlock(0, 32, 1, chunk);
-        BlockType.AddGrassBlock(0, 32, 2, chunk);
-        BlockType.AddGrassBlock(1, 32, 0, chunk);
+        BlockType.AddDirtBlock(0, 32, 1, chunk);
+        BlockType.AddSandBlock(0, 32, 2, chunk);
+        BlockType.AddStoneBlock(1, 32, 0, chunk);
         BlockType.AddGrassBlock(1, 32, 1, chunk);
         BlockType.AddGrassBlock(1, 32, 2, chunk);
         chunk.GenerateChunkMesh(); 
@@ -149,6 +152,12 @@ public class Game : GameWindow
         Matrix4 model = Matrix4.Identity;
         GL.UniformMatrix4(modelLoc, false, ref model);
 
+        // Bind the texture
+        GL.ActiveTexture(TextureUnit.Texture0);
+        GL.BindTexture(TextureTarget.Texture2D, BlockType.GrassTextureID);
+        int textureLocation = GL.GetUniformLocation(shaderProgram, "texture1");
+        GL.Uniform1(textureLocation, 0);
+
         chunk.Render(); // Render chunk mesh
 
         crosshair.Render(crosshairShaderProgram, Size.X, Size.Y);
@@ -173,31 +182,12 @@ public class Game : GameWindow
         Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(45.0f), Size.X / (float)Size.Y, 0.1f, 100.0f);
         GL.UniformMatrix4(projLoc, false, ref projection);
 
-        DirectionalLight();
-
         // Initialise crosshair
         crosshair = new Crosshair();
         crosshair.InitialiseCrosshair();
         crosshairShaderProgram = new Shader().CreateCrosshairShaderProgram();
     }
 
-
-
-    private void DirectionalLight() {
-        // Get light uniform locations
-        lightDirLoc = GL.GetUniformLocation(shaderProgram, "lightDirection");
-        lightColorLoc = GL.GetUniformLocation(shaderProgram, "lightColor");
-        objectColorLoc = GL.GetUniformLocation(shaderProgram, "objectColor");
-
-        // Set up lighting values
-        Vector3 lightDirection = new Vector3(1.0f, -1.0f, 0.0f);
-        Vector3 lightColor = new Vector3(0.7f, 0.7f, 0.7f);
-        Vector3 objectColor = new Vector3(1.0f, 1.0f, 1.0f); // Color of blocks
-
-        GL.Uniform3(lightDirLoc, lightDirection);
-        GL.Uniform3(lightColorLoc, lightColor);
-        GL.Uniform3(objectColorLoc, objectColor);
-    }
 
 
 
